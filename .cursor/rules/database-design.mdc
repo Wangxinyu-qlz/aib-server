@@ -1,0 +1,178 @@
+---
+globs: **/entity/**,**/mapper/**
+description: 数据库设计和MyBatis Plus使用规范
+---
+
+# 数据库设计和MyBatis Plus规范
+
+## 数据库设计原则
+- 使用MySQL作为主数据库
+- 遵循第三范式设计
+- 合理使用索引优化查询
+- 考虑数据分片和扩展性
+- 表名称前缀为"t_"
+
+## 核心表结构
+```sql
+-- 公共字段（BaseEntity）：
+-- id BIGINT PK
+-- created_by BIGINT
+-- created_time DATETIME
+-- updated_by BIGINT
+-- updated_time DATETIME
+-- is_deleted TINYINT
+-- version INT
+-- remark VARCHAR
+
+-- 用户表
+CREATE TABLE t_user (
+    id BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    username VARCHAR(64) NOT NULL COMMENT '用户名',
+    password VARCHAR(128) NOT NULL COMMENT '加密后的密码',
+    user_avatar VARCHAR(255) NULL DEFAULT NULL COMMENT '用户头像URL',
+    reset_secret VARCHAR(128) NOT NULL COMMENT '密码重置密钥',
+    birthday DATE NULL DEFAULT NULL COMMENT '用户生日',
+    region INT NULL DEFAULT NULL COMMENT '用户地区（对应RegionEnum的code）',
+    nickname VARCHAR(64) NULL DEFAULT NULL COMMENT '用户昵称',
+    gender TINYINT(1) NULL DEFAULT NULL COMMENT '用户性别（0-女性，1-男性）',
+    cancel_time BIGINT(20) NULL DEFAULT NULL COMMENT '注销时间戳（毫秒时间戳）',
+    description VARCHAR(255) NULL DEFAULT NULL COMMENT '个人签名',
+    
+    -- 公共字段
+    created_by BIGINT DEFAULT NULL COMMENT '创建人ID',
+    created_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_by BIGINT DEFAULT NULL COMMENT '更新人ID',
+    updated_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    is_deleted TINYINT(1) NOT NULL DEFAULT 0 COMMENT '逻辑删除 0-正常 1-已删除',
+    version INT DEFAULT 0 COMMENT '乐观锁版本号',
+    remark VARCHAR(255) DEFAULT NULL COMMENT '备注',
+
+    PRIMARY KEY (id),
+    UNIQUE INDEX idx_username (username),
+    INDEX idx_region (region),
+    INDEX idx_gender (gender),
+    INDEX idx_is_deleted (is_deleted),
+    INDEX idx_created_time (created_time),
+    INDEX idx_updated_time (updated_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
+
+-- 图片表
+CREATE TABLE t_images (
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '图片ID',
+    user_id BIGINT NOT NULL COMMENT '用户ID',
+    file_name VARCHAR(255) NOT NULL COMMENT '保存时生成的唯一文件名',
+    original_file_name VARCHAR(255) NOT NULL COMMENT '原始文件名',
+    file_path VARCHAR(500) NOT NULL COMMENT '文件路径',
+    file_url VARCHAR(500) NOT NULL COMMENT '文件URL',
+    content_type VARCHAR(100) NOT NULL COMMENT '文件类型',
+    width VARCHAR(20) NOT NULL COMMENT '宽度',
+    height VARCHAR(20) NOT NULL COMMENT '高度',
+    file_size BIGINT NOT NULL COMMENT '文件大小(字节)',
+    description TEXT COMMENT '描述',
+    upload_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '上传时间',
+
+    -- 公共字段
+    created_by BIGINT DEFAULT NULL COMMENT '创建人ID',
+    created_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_by BIGINT DEFAULT NULL COMMENT '更新人ID',
+    updated_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    is_deleted TINYINT(1) NOT NULL DEFAULT 0 COMMENT '逻辑删除 0-正常 1-已删除',
+    version INT DEFAULT 0 COMMENT '乐观锁版本号',
+    remark VARCHAR(255) DEFAULT NULL COMMENT '备注',
+
+    PRIMARY KEY (id),
+    KEY idx_user_id (user_id),
+    KEY idx_upload_time (upload_time),
+    KEY idx_is_deleted (is_deleted),
+    CONSTRAINT fk_images_user FOREIGN KEY (user_id) REFERENCES t_user (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='图片表';
+
+-- 标签表
+CREATE TABLE t_tag (
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '标签ID',
+    tag_name VARCHAR(50) NOT NULL COMMENT '标签名称',
+
+    -- 公共字段
+    created_by BIGINT DEFAULT NULL COMMENT '创建人ID',
+    created_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_by BIGINT DEFAULT NULL COMMENT '更新人ID',
+    updated_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    is_deleted TINYINT(1) NOT NULL DEFAULT 0 COMMENT '逻辑删除',
+    version INT DEFAULT 0 COMMENT '乐观锁版本号',
+    remark VARCHAR(255) DEFAULT NULL COMMENT '备注',
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_tag_name (tag_name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='标签表';
+
+-- 图片标签关联表
+CREATE TABLE t_images_tags (
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    image_id BIGINT NOT NULL COMMENT '图片ID',
+    tag_id BIGINT NOT NULL COMMENT '标签ID',
+    user_id BIGINT NOT NULL COMMENT '用户ID',
+
+    -- 公共字段
+    created_by BIGINT DEFAULT NULL COMMENT '创建人ID',
+    created_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_by BIGINT DEFAULT NULL COMMENT '更新人ID',
+    updated_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    is_deleted TINYINT(1) NOT NULL DEFAULT 0 COMMENT '逻辑删除',
+    version INT DEFAULT 0 COMMENT '乐观锁版本号',
+    remark VARCHAR(255) DEFAULT NULL COMMENT '备注',
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_image_tag (image_id, tag_id),
+    KEY idx_image_id (image_id),
+    KEY idx_tag_id (tag_id),
+    KEY idx_user_id (user_id),
+    CONSTRAINT fk_image_tag_image FOREIGN KEY (image_id) REFERENCES t_images (id) ON DELETE CASCADE,
+    CONSTRAINT fk_image_tag_tag FOREIGN KEY (tag_id) REFERENCES t_tag (id) ON DELETE CASCADE,
+    CONSTRAINT fk_image_tag_user FOREIGN KEY (user_id) REFERENCES t_user (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='图片标签关联表';
+```
+
+## MyBatis Plus使用规范
+- 实体类继承`BaseEntity`
+    - id BIGINT PK
+    - created_by BIGINT
+    - created_time DATETIME
+    - updated_by BIGINT
+    - updated_time DATETIME
+    - is_deleted TINYINT
+    - version INT
+    - remark VARCHAR
+- 使用`@TableName`指定表名
+- 使用`@TableId`指定主键
+- 使用`@TableField`映射字段
+
+## 实体类示例
+```java
+@Data
+@TableName("images")
+public class Image extends BaseEntity {
+    @TableId(type = IdType.AUTO)
+    private Long id;
+    
+    private Long userId;
+    private String filename;
+    private String originalName;
+    private Long fileSize;
+    private String mimeType;
+    private String storagePath;
+    private String aiDescription;
+    private String tags;
+}
+```
+
+## 数据访问层
+- Mapper接口继承`BaseMapper<T>`
+- 复杂查询使用XML配置
+- 使用`@Select`、`@Insert`等注解简化操作
+- 实现分页查询使用`Page<T>`
+
+## 最佳实践
+- 使用逻辑删除而非物理删除
+- 添加数据库连接池配置
+- 实现读写分离（如需要）
+- 使用事务注解保证数据一致性

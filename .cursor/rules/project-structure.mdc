@@ -1,0 +1,35 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+# AI图床系统 (AIB-Server) 项目概览
+
+## 项目简介
+这是一个基于Spring Boot的AI图床系统，核心功能是使用大模型和MCP（Model Context Protocol）进行智能搜图。
+
+## 技术栈
+- **框架**: Spring Boot 3.5.5 + Java 21
+- **AI集成**: Spring AI 1.0.1 + MCP客户端/服务端
+- **数据库**: MySQL + MyBatis Plus 3.5.4
+- **存储**: MinIO 8.5.7 (对象存储)
+- **安全**: Spring Security + JWT
+- **工具**: Lombok + Hutool 5.8.25
+
+## 核心功能模块
+1. **智能搜图**: 使用大模型理解用户需求，通过MCP协议搜索相关图片
+2. **图片管理**: 上传、存储、分类、标签管理
+3. **用户系统**: 认证、授权、用户管理
+4. **API服务**: RESTful API接口
+
+## 项目结构
+- 主入口: [AibServerApplication.java](mdc:src/main/java/com/qlz/aibserver/AibServerApplication.java)
+- 配置文件: [application.yml](mdc:src/main/resources/application.yml)
+- 依赖管理: [pom.xml](mdc:pom.xml)
+
+## 开发原则
+- 遵循Spring Boot最佳实践
+- 使用MCP协议进行AI模型集成
+- 采用RESTful API设计
+- 注重代码可读性和可维护性

@@ -1,0 +1,43 @@
+---
+globs: **/controller/**,**/dto/**
+description: RESTful API设计规范
+---
+
+# RESTful API设计规范
+
+## API设计原则
+- 遵循RESTful设计原则
+- 使用HTTP状态码表示操作结果
+- 统一的响应格式
+- 完善的错误处理
+
+## 统一响应格式
+```java
+@Data
+public class ApiResponse<T> {
+    private Integer code;
+    private String message;
+    private T data;
+    private Long timestamp;
+}
+```
+
+## 控制器规范
+- 使用`@RestController`注解
+- 路径使用复数形式（如`/images`、`/users`）
+- 使用适当的HTTP方法（GET、POST、PUT、DELETE）
+- 添加API文档注解（Swagger/OpenAPI）
+
+## 统一的路径前缀
+-  使用"/api/v1/"作为统一api前缀
+
+## 参数校验
+- 使用`@Valid`注解进行参数校验
+- 自定义校验注解处理业务规则
+- 返回详细的错误信息
+
+## 安全考虑
+- 使用JWT进行身份认证
+- 实现基于角色的访问控制
+- 添加请求频率限制
+- 敏感操作需要二次验证

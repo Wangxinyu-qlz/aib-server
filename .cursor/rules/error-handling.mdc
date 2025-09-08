@@ -1,0 +1,73 @@
+---
+globs: **/exception/**,**/controller/**
+description: 错误处理和日志记录规范
+---
+
+# 错误处理和日志记录
+
+## 全局异常处理
+```java
+@ControllerAdvice
+public class GlobalExceptionHandler {
+    
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleValidation(ValidationException e) {
+        // 参数校验异常处理
+    }
+    
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAuth(AuthenticationException e) {
+        // 认证异常处理
+    }
+    
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<Void>> handleGeneral(Exception e) {
+        // 通用异常处理
+    }
+}
+```
+
+## 自定义异常类
+```java
+public class AibException extends RuntimeException {
+    private final ErrorCode errorCode;
+    
+    public AibException(ErrorCode errorCode, String message) {
+        super(message);
+        this.errorCode = errorCode;
+    }
+}
+```
+
+## 错误码定义
+```java
+public enum ErrorCode {
+    USER_NOT_FOUND(1001, "用户不存在"),
+    IMAGE_UPLOAD_FAILED(2001, "图片上传失败"),
+    AI_SERVICE_ERROR(3001, "AI服务异常"),
+    MCP_CONNECTION_ERROR(4001, "MCP连接异常");
+    
+    private final int code;
+    private final String message;
+}
+```
+
+## 日志记录规范
+- 使用SLF4J + Logback
+- 不同级别日志使用场景：
+  - ERROR: 系统错误、异常情况
+  - WARN: 警告信息、潜在问题
+  - INFO: 重要业务流程、关键操作
+  - DEBUG: 调试信息、详细执行过程
+
+## 日志格式
+```xml
+<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+```
+
+## 最佳实践
+- 敏感信息不记录到日志
+- 使用结构化日志格式
+- 异步日志写入提高性能
+- 日志文件按日期和大小轮转
+- 生产环境日志级别设置为INFO
