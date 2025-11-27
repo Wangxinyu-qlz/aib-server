@@ -1,5 +1,6 @@
 package com.qlz.aibserver.service.impl;
 
+import cn.hutool.json.*;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qlz.aibserver.dto.req.LoginReq;
 import com.qlz.aibserver.dto.resp.LoginResp;
@@ -63,7 +64,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         // 保存用户
         int result = userMapper.insert(user);
-        if (result <= 0) {
+	    User user1 = userMapper.selectByUsername(registerReq.getUsername());
+		if(user1 == null) {
+			log.info("保存后立即查询无法查到");
+		} else {
+			log.info("用户:{}", JSONUtil.toJsonStr(user1));
+		}
+	    if (result <= 0) {
             throw new RuntimeException("用户注册失败");
         }
 

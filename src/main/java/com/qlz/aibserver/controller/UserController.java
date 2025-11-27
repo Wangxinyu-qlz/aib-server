@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @Slf4j
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 @Validated
 public class UserController extends BaseController {
@@ -43,20 +43,5 @@ public class UserController extends BaseController {
      * @return 登录结果
      */
 
-
-    /**
-     * 检查用户名是否可用
-     * 
-     * @param username 用户名
-     * @return 检查结果
-     */
-
-
-    /**
-     * 检查邮箱是否可用
-     * 
-     * @param email 邮箱
-     * @return 检查结果
-     */
 
 }

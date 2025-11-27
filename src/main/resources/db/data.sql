@@ -14,3 +14,6 @@ INSERT INTO t_user (username, password, email, nickname, avatar, status, create_
 ('demo', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iKTVEFDi', 'demo@example.com', '演示用户', 'https://example.com/avatar/demo.jpg', 1, NOW(), NOW(), 0);
 -- 注意：上述密码都是 'password123' 的BCrypt加密结果
 -- 用于测试的密码规则：至少6位，包含英文字母和数字
+
+
+SELECT @@transaction_isolation;

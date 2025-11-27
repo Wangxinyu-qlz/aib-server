@@ -2,8 +2,8 @@
 spring:
   application:
     name: aib-server
-  profiles:
-    active: dev  # 默认激活开发环境
+#  profiles:
+#    active: dev  # 默认激活开发环境
   
   # 数据库配置
   datasource:
@@ -60,7 +60,7 @@ mybatis-plus:
 server:
   port: 8080
   servlet:
-    context-path: /api/v1
+    context-path: /ai-image-bed
     encoding:
       charset: UTF-8
       enabled: true
